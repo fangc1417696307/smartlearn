@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartLearn · 个性化学习多智能体系统</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ============ 登录 / 注册 ============ -->
+    <section id="view-auth" class="view auth-view">
+      <div class="auth-hero">
+        <div class="brand">
+          <div class="brand-logo">S</div>
+          <div>
+            <h1 class="brand-name">SmartLearn</h1>
+            <p class="brand-tag">个性化学习多智能体系统</p>
+          </div>
+        </div>
+        <div class="auth-kicker">Multi-Agent Learning</div>
+        <h2 class="auth-headline">让学习资料，<br /><span class="grad-text">长成你的形状</span></h2>
+        <p class="auth-sub">SmartLearn 用多智能体协作，把你的专业、目标与知识短板，变成专属的学习资源与路径。</p>
+        <ul class="auth-features">
+          <li><span class="dot"></span>对话式构建你的学习画像</li>
+          <li><span class="dot"></span>多智能体协同生成专属资源</li>
+          <li><span class="dot"></span>个性化学习路径与精准推送</li>
+        </ul>
+        <div id="auth-orbit" class="orbit-wrap"></div>
+      </div>
+
+      <div class="auth-card">
+        <div class="auth-panel">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-auth-tab="login">密码登录</button>
+          <button class="auth-tab" data-auth-tab="code">验证码登录</button>
+          <button class="auth-tab" data-auth-tab="register">注册</button>
+        </div>
+
+        <form id="form-login" class="auth-form">
+          <label>学号 / 邮箱
+            <input type="text" id="login-account" placeholder="请输入学号或邮箱" autocomplete="username" />
+          </label>
+          <label>密码
+            <input type="password" id="login-password" placeholder="请输入密码" autocomplete="current-password" />
+          </label>
+          <div class="captcha-box">
+            <span class="captcha-question" id="login-captcha-q">点击刷新获取验证码</span>
+            <button type="button" class="captcha-refresh" data-refresh="login">↻ 刷新</button>
+          </div>
+          <input type="text" id="login-captcha" placeholder="请输入上方算式结果" />
+          <input type="hidden" id="login-captcha-id" />
+          <button type="submit" class="btn btn-primary btn-block">登 录</button>
+          <p class="auth-hint">还没有账号？<a href="#" data-auth-switch="register">立即注册</a></p>
+        </form>
+
+        <form id="form-code-login" class="auth-form" hidden>
+          <label>邮箱
+            <input type="email" id="code-email" placeholder="请输入已绑定的邮箱" />
+          </label>
+          <label>验证码
+            <div class="code-row">
+              <input type="text" id="code-input" placeholder="6 位验证码" maxlength="6" />
+              <button type="button" class="btn btn-ghost code-send" id="code-send">发送验证码</button>
+            </div>
+          </label>
+          <button type="submit" class="btn btn-primary btn-block">验证码登录</button>
+          <p class="auth-hint">需先绑定邮箱。<a href="#" data-auth-switch="login">返回密码登录</a></p>
+        </form>
+
+        <form id="form-register" class="auth-form" hidden>
+          <label>专业
+            <select id="reg-major">
+              <option>计算机科学与技术</option>
+              <option>软件工程</option>
+              <option>网络工程</option>
+              <option>人工智能</option>
+              <option>数据科学与大数据技术</option>
+              <option>数学与应用数学</option>
+              <option>英语</option>
+              <option>经济与管理</option>
+            </select>
+          </label>
+          <label>学号
+            <input type="text" id="reg-account" placeholder="请输入学号" />
+          </label>
+          <label>昵称
+            <input type="text" id="reg-nickname" placeholder="给自己起个名字" />
+          </label>
+          <label>密码
+            <input type="password" id="reg-password" placeholder="请设置密码（至少 6 位）" />
+          </label>
+          <div class="captcha-box">
+            <span class="captcha-question" id="reg-captcha-q">点击刷新获取验证码</span>
+            <button type="button" class="captcha-refresh" data-refresh="reg">↻ 刷新</button>
+          </div>
+          <input type="text" id="reg-captcha" placeholder="请输入上方算式结果" />
+          <input type="hidden" id="reg-captcha-id" />
+          <button type="submit" class="btn btn-primary btn-block">注册并开始</button>
+          <p class="auth-hint">已有账号？<a href="#" data-auth-switch="login">去登录</a></p>
+        </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 画像构建对话 ============ -->
+    <section id="view-onboarding" class="view onboarding-view" hidden>
+      <header class="onboard-header">
+        <div class="brand">
+          <div class="brand-logo">S</div>
+          <div class="brand-name">SmartLearn</div>
+        </div>
+        <div class="onboard-header-right">
+          <div class="agent-pill">学情分析师 · 正在为你构建画像</div>
+          <button class="btn btn-ghost btn-sm" id="onboard-skip">跳过，直接进入</button>
+        </div>
+      </header>
+      <div class="onboard-body">
+        <div id="onboard-chat" class="chat-box"></div>
+        <div id="onboard-input-bar" class="chat-input-bar">
+          <div id="onboard-quick-replies" class="quick-replies"></div>
+          <div class="chat-input-row">
+            <input type="text" id="onboard-input" placeholder="输入你的回答…" />
+            <button class="btn btn-primary" id="onboard-send">发送</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 主界面 ============ -->
+    <section id="view-main" class="view main-view" hidden>
+      <aside class="sidebar">
+        <div class="brand sidebar-brand">
+          <div class="brand-logo">S</div>
+          <div class="brand-name">SmartLearn</div>
+        </div>
+        <nav class="nav">
+          <a class="nav-item active" data-nav="dashboard"><span>🏠</span>首页</a>
+          <a class="nav-item" data-nav="path"><span>🧭</span>学习路径</a>
+          <a class="nav-item" data-nav="resources"><span>📚</span>资源中心</a>
+          <a class="nav-item" data-nav="qa"><span>💬</span>答疑</a>
+          <a class="nav-item" data-nav="assessment"><span>📊</span>学习评估</a>
+          <a class="nav-item" data-nav="profile"><span>👤</span>我的画像</a>
+          <div class="nav-admin" id="nav-admin" hidden>
+            <a class="nav-item" data-nav="users"><span>👥</span>用户管理</a>
+            <a class="nav-item" data-nav="roles"><span>🛡️</span>角色管理</a>
+          </div>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="user-chip">
+            <div class="avatar" id="user-avatar">学</div>
+            <div class="user-meta">
+              <div class="user-name" id="user-name">同学</div>
+              <div class="user-major" id="user-major">计算机科学与技术</div>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-block" id="btn-logout">退出登录</button>
+        </div>
+      </aside>
+
+      <main class="content">
+        <div class="topbar">
+          <div class="topbar-title" id="topbar-title">首页</div>
+          <div class="topbar-right">
+            <span class="topbar-date" id="topbar-date"></span>
+          </div>
+        </div>
+
+        <!-- 首页 -->
+        <div class="page active" id="page-dashboard">
+          <div class="hero">
+            <div class="hero-text">
+              <div class="hero-kicker">你的专属 AI 学习团队已就绪</div>
+              <h2 id="greeting-title">你好，<span class="grad-text">同学</span> 👋</h2>
+              <div class="hero-sub" id="greeting-sub">多智能体已根据你的画像，规划好今天的学习路线。</div>
+              <div class="hero-goal" id="greeting-goal">🎯 学习目标：期末 90+</div>
+            </div>
+            <div class="hero-orbit" id="hero-orbit"></div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-head">
+                <h3>📌 今日学习任务</h3>
+                <a class="link" data-go="path">查看全部</a>
+              </div>
+              <div id="dash-today" class="task-list"></div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h3>🧬 我的画像速览</h3>
+                <a class="link" data-go="profile">详情</a>
+              </div>
+              <div id="dash-profile" class="profile-snapshot"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>✨ 为你精准推送</h3>
+              <a class="link" data-go="resources">进入资源中心</a>
+            </div>
+            <div id="dash-push" class="resource-grid"></div>
+          </div>
+        </div>
+
+        <!-- 学习路径 -->
+        <div class="page" id="page-path">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>🧭 我的学习路径</h3>
+                <p class="muted">基于你的画像一次性生成，按顺序完成即可（学习顺序固定）</p>
+              </div>
+              <div class="progress-wrap">
+                <span id="path-progress-label">0%</span>
+                <div class="progress-bar"><div id="path-progress-fill" class="progress-fill"></div></div>
+              </div>
+            </div>
+            <div id="path-steps" class="path-steps"></div>
+          </div>
+        </div>
+
+        <!-- 资源中心 -->
+        <div class="page" id="page-resources">
+          <div class="card">
+            <div class="resource-tabs" id="resource-tabs"></div>
+            <div id="resource-list" class="resource-grid"></div>
+          </div>
+        </div>
+
+        <!-- 资源详情 -->
+        <div class="page" id="page-resource-detail">
+          <button class="btn btn-ghost back-btn" data-go="resources">← 返回资源中心</button>
+          <div id="resource-detail-body" class="card"></div>
+        </div>
+
+        <!-- 答疑 -->
+        <div class="page" id="page-qa">
+          <div class="card qa-wrap">
+            <div class="card-head">
+              <h3>💬 答疑</h3>
+              <span class="agent-pill">答疑老师 · 纯文字解答</span>
+            </div>
+            <div id="qa-chat" class="chat-box"></div>
+            <div class="chat-input-row qa-input">
+              <input type="text" id="qa-input" placeholder="输入你的问题，例如：什么是平衡二叉树的旋转？" />
+              <button class="btn btn-primary" id="qa-send">提问</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 学习评估 -->
+        <div class="page" id="page-assessment">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-head"><h3>📊 六维掌握度</h3></div>
+              <div id="radar-box" class="radar-box"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>📝 评估结论</h3></div>
+              <div id="assess-conclusion" class="assess-conclusion"></div>
+              <div id="assess-stats" class="stat-grid"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>🎯 调整后的推送策略</h3></div>
+            <p class="muted">评估结果仅调整资源推送，学习路径保持不变。</p>
+            <div id="assess-push" class="resource-grid"></div>
+          </div>
+        </div>
+
+        <!-- 我的画像 -->
+        <div class="page" id="page-profile">
+          <div class="card">
+            <div class="card-head">
+              <h3>🧬 我的学习画像</h3>
+              <span class="muted" id="profile-updated"></span>
+            </div>
+            <div id="profile-dims" class="profile-dims"></div>
+          </div>
+        </div>
+
+        <!-- 用户管理 -->
+        <div class="page" id="page-users">
+          <div class="card">
+            <div class="card-head">
+              <h3>👥 用户管理</h3>
+              <button class="btn btn-primary btn-sm" id="user-add-btn">+ 新增用户</button>
+            </div>
+            <div id="user-list" class="table-wrap"></div>
+          </div>
+        </div>
+
+        <!-- 角色管理 -->
+        <div class="page" id="page-roles">
+          <div class="card">
+            <div class="card-head">
+              <h3>🛡️ 角色管理</h3>
+              <button class="btn btn-primary btn-sm" id="role-add-btn">+ 新建角色</button>
+            </div>
+            <div id="role-list" class="role-list"></div>
+          </div>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <!-- 强制改密弹窗 -->
+  <div id="pwd-modal" class="modal-mask" hidden>
+    <div class="modal-card">
+      <h3>🔒 请修改初始密码</h3>
+      <p class="muted">为保障账号安全，首次登录需设置新密码。</p>
+      <input type="password" id="pwd-new" placeholder="新密码（至少 6 位）" />
+      <button class="btn btn-primary btn-block" id="pwd-submit">确认修改</button>
+      <p class="auth-hint muted" id="pwd-err"></p>
+    </div>
+  </div>
+
+  <!-- 用户新增/编辑弹窗 -->
+  <div id="user-modal" class="modal-mask" hidden>
+    <div class="modal-card modal-wide">
+      <h3 id="user-modal-title">新增用户</h3>
+      <input type="hidden" id="user-m-id" />
+      <input type="text" id="user-m-account" placeholder="学号" />
+      <input type="text" id="user-m-nickname" placeholder="昵称" />
+      <input type="text" id="user-m-email" placeholder="邮箱（选填，绑定后可验证码登录）" />
+      <input type="text" id="user-m-major" placeholder="专业" />
+      <input type="password" id="user-m-password" placeholder="密码（新增必填；编辑留空则不修改）" />
+      <div class="perm-title">角色</div>
+      <div id="user-m-roles" class="checkbox-list"></div>
+      <button class="btn btn-primary btn-block" id="user-modal-save">保存</button>
+      <button class="btn btn-ghost btn-block" id="user-modal-cancel">取消</button>
+    </div>
+  </div>
+
+  <!-- 角色新建/编辑弹窗 -->
+  <div id="role-modal" class="modal-mask" hidden>
+    <div class="modal-card modal-wide">
+      <h3 id="role-modal-title">新建角色</h3>
+      <input type="hidden" id="role-m-id" />
+      <input type="text" id="role-m-name" placeholder="角色名称（如：助教）" />
+      <input type="text" id="role-m-code" placeholder="角色编码（英文，如：assistant）" />
+      <input type="text" id="role-m-desc" placeholder="角色描述" />
+      <div class="perm-title">权限</div>
+      <div id="role-m-perms" class="checkbox-list"></div>
+      <button class="btn btn-primary btn-block" id="role-modal-save">保存</button>
+      <button class="btn btn-ghost btn-block" id="role-modal-cancel">取消</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

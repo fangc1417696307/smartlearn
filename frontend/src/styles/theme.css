@@ -1,0 +1,69 @@
+/* StudyFetch 风格主题定制 */
+:root {
+  /* 品牌色 */
+  --brand-blue: #2908ff;
+  --brand-lime: #bcf887;
+  --brand-cyan: #00b5c2;
+  --brand-bg: #f7f6ef;
+  --brand-ink: #191919;
+  --brand-ink-2: #737373;
+
+  /* Element Plus 主色覆盖 */
+  --el-color-primary: #2908ff;
+  --el-color-primary-light-3: #5a3bff;
+  --el-color-primary-light-5: #8a74ff;
+  --el-color-primary-light-7: #b9adff;
+  --el-color-primary-light-8: #d0c9ff;
+  --el-color-primary-light-9: #e8e4ff;
+  --el-color-primary-dark-2: #1f06d6;
+
+  /* 圆角 */
+  --el-border-radius-base: 12px;
+  --el-border-radius-small: 8px;
+  --el-border-radius-round: 999px;
+
+  /* 字体 */
+  --el-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+html, body, #app { height: 100%; margin: 0; }
+
+body {
+  background: var(--brand-bg);
+  color: var(--brand-ink);
+  font-family: var(--el-font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 标题衬线字体 */
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Bitter', Georgia, 'Times New Roman', serif;
+}
+
+/* 全局滚动条 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #d9d9d0; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #c4c4ba; }
+
+/* Element 按钮胶囊化 */
+.el-button { border-radius: 999px; font-weight: 600; }
+.el-button--primary {
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+}
+.el-button--primary:hover, .el-button--primary:focus {
+  background: #0d40f4;
+  border-color: #0d40f4;
+}
+
+/* 卡片 */
+.el-card { border-radius: 20px; border: 1px solid #e5e5e5; }
+
+/* 智能体协作动画（v-html 渲染的 SVG 需全局样式） */
+.orbit-link { stroke-dasharray: 5 9; animation: orbitDash 1.5s linear infinite; }
+@keyframes orbitDash { to { stroke-dashoffset: -28; } }
+.orbit-node { animation: orbitFloat 3.4s ease-in-out infinite; }
+.orbit-node:nth-child(odd) { animation-delay: 1.2s; }
+@keyframes orbitFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.orbit-core-pulse { animation: orbitPulse 2.6s ease-out infinite; }
+@keyframes orbitPulse { 0% { opacity: 0.5; } 100% { opacity: 0; } }
