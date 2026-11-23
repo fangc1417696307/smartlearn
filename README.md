@@ -4,7 +4,7 @@
 
 - `backend/`：FastAPI + SQLite + Redis + Kafka
 - `frontend/`：Vue 3 + Vite + Element Plus + ECharts
-- `prototype/`：早期纯前端原型（已由 `frontend/` 取代）
+- `docs/prototype/`：早期纯前端原型（已由 `frontend/` 取代）
 - `docs/`：需求与 PRD
 - `scripts/`：Windows 启动脚本
 - `backend/tools/`：Redis 与 Kafka 本地运行时（体积大，未入库，新机器需自行下载）
@@ -231,14 +231,16 @@ WebSocket 消息格式：
 
 ```bash
 cd backend
-venv/Scripts/python test_chat.py
+venv/Scripts/python tests/test_chat.py
 ```
 
 实时在线状态（数据大屏「在线用户」）单独测试，脚本会使用独立的 Redis DB 15，不影响现有数据：
 
 ```bash
-venv/Scripts/python test_presence.py
+venv/Scripts/python tests/test_presence.py
 ```
+
+更多测试说明见 `backend/tests/README.md`；Windows 下也可以直接双击 `backend/tests/run_offline_tests.bat` 一次跑完这两个测试。
 
 ## 常见启动错误
 

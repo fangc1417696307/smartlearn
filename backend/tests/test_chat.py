@@ -17,7 +17,8 @@ import time
 import urllib.error
 import urllib.request
 
-BACKEND = os.path.dirname(os.path.abspath(__file__))
+# 本文件位于 backend/tests/，backend 目录是上一级
+BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PY = sys.executable
 PORT = 8013
 BASE = f"http://127.0.0.1:{PORT}"
