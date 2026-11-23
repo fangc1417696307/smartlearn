@@ -29,7 +29,21 @@ MQ_PRODUCED_KEY = "stats:mq:produced"
 MQ_CONSUMED_KEY = "stats:mq:consumed"
 MQ_RECENT_KEY = "stats:mq:recent"
 MQ_SERIES_KEY = "stats:mq:series"
-ONLINE_KEY = "stats:online"
-ONLINE_WINDOW_MS = 5 * 60 * 1000  # 5 分钟内活跃视为在线
 CACHE_OVERVIEW_KEY = "stats:cache:overview"
 CACHE_OVERVIEW_TTL = 5  # 秒
+
+# 实时在线状态（连接级）：登录后的页面统一建 WebSocket，心跳续期
+PRESENCE_KEY = "presence:online"  # ZSET：member=用户 JSON，score=过期时间（毫秒）
+PRESENCE_TTL = int(os.getenv("PRESENCE_TTL", "90"))  # 秒；进程被杀后最多这么久自动下线
+PRESENCE_HEARTBEAT_TIMEOUT = int(os.getenv("PRESENCE_HEARTBEAT_TIMEOUT", "120"))
+
+# 即时聊天
+CHAT_GATEWAY_ID = os.getenv("CHAT_GATEWAY_ID", "gw1")  # 单进程部署只有一个网关
+CHAT_ONLINE_TTL = int(os.getenv("CHAT_ONLINE_TTL", "90"))  # 在线状态 TTL（秒），心跳续期
+CHAT_ONLINE_KEY = "chat:online:{uid}"
+CHAT_SEQ_KEY = "chat:seq:{conv_id}"
+CHAT_MAX_BODY = int(os.getenv("CHAT_MAX_BODY", "4000"))
+CHAT_HISTORY_LIMIT = int(os.getenv("CHAT_HISTORY_LIMIT", "500"))
+CHAT_HEARTBEAT_TIMEOUT = int(os.getenv("CHAT_HEARTBEAT_TIMEOUT", "120"))  # 服务端兜底断连
+CHAT_RATE_LIMIT = int(os.getenv("CHAT_RATE_LIMIT", "10"))  # 每 5 秒最多消息数
+CHAT_RATE_WINDOW = 5.0

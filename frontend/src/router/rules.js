@@ -13,6 +13,7 @@ export const ROUTE_PERM = {
   resources: 'resource.view',
   'resource-detail': 'resource.view',
   qa: 'qa.ask',
+  chat: 'chat.use',
   assessment: 'assessment.view',
   onboarding: 'profile.manage',
 }

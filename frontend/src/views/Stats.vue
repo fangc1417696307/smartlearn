@@ -135,7 +135,7 @@ const kpis = computed(() => {
   const msgPerSec = recent.length ? Math.round(totalProduced / recent.length) : 0
   return [
     { label: '总用户数', value: overview.value.total_users ?? 0, unit: '人', foot: `角色 ${(overview.value.role_distribution || []).length} 类` },
-    { label: '在线用户', value: online.value.count ?? 0, unit: '人', foot: '5 分钟内活跃' },
+    { label: '在线用户', value: online.value.count ?? 0, unit: '人', foot: 'WebSocket 实时连接' },
     { label: '今日新增', value: overview.value.today_new ?? 0, unit: '人', foot: `待审核 ${overview.value.pending_users ?? 0}` },
     { label: '消息吞吐 / 秒', value: msgPerSec, unit: 'msg/s', foot: `累计 ${mq.value.produced ?? 0} 条` },
     { label: '缓存命中率', value: cache.value.hit_rate ?? 0, unit: '%', foot: `${cache.value.hits ?? 0} 次命中` },

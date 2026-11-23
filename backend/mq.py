@@ -27,6 +27,7 @@ from confluent_kafka import (
 from confluent_kafka.admin import AdminClient, NewTopic
 
 import config
+import presence_hub
 import redis_client
 
 _stop = threading.Event()
@@ -228,9 +229,8 @@ def _sample_loop():
             produced = int(client.get(config.MQ_PRODUCED_KEY) or 0)
             consumed = int(client.get(config.MQ_CONSUMED_KEY) or 0)
             now_ms = int(time.time() * 1000)
-            online = int(
-                client.zcount(config.ONLINE_KEY, now_ms - config.ONLINE_WINDOW_MS, "+inf")
-            )
+            # 连接级实时在线人数（presence_hub 自己处理 Redis 降级）
+            online = presence_hub.count()
             d_produced = 0 if last_produced is None else max(0, produced - last_produced)
             d_consumed = 0 if last_consumed is None else max(0, consumed - last_consumed)
             last_produced, last_consumed = produced, consumed

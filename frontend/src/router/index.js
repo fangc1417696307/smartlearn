@@ -15,6 +15,7 @@ const routes = [
       { path: 'resources', name: 'resources', component: () => import('../views/Resources.vue') },
       { path: 'resources/:id', name: 'resource-detail', component: () => import('../views/ResourceDetail.vue') },
       { path: 'qa', name: 'qa', component: () => import('../views/Qa.vue') },
+      { path: 'chat', name: 'chat', component: () => import('../views/Chat.vue'), meta: { perm: 'chat.use' } },
       { path: 'assessment', name: 'assessment', component: () => import('../views/Assessment.vue') },
       { path: 'profile', name: 'profile', component: () => import('../views/Profile.vue') },
       { path: 'stats', name: 'stats', component: () => import('../views/Stats.vue'), meta: { perm: 'stats.view' } },

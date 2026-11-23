@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import database, models, seed, mq
-from routers import auth, users, roles, students, stats
+from routers import auth, users, roles, students, stats, chat, presence
 
 
 @asynccontextmanager
@@ -36,6 +36,8 @@ app.include_router(users.router)
 app.include_router(roles.router)
 app.include_router(students.router)
 app.include_router(stats.router)
+app.include_router(chat.router)
+app.include_router(presence.router)
 
 
 @app.get("/")

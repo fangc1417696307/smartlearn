@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 import config
 import models
 import mq
+import presence_hub
 import redis_client
 from database import get_db
 from deps import require_permission
@@ -73,7 +74,7 @@ def bigscreen(db: Session = Depends(get_db), user=Depends(require_permission("st
             "cache_ttl": config.CACHE_OVERVIEW_TTL,
         },
         "mq": mq.snapshot(),
-        "online": redis_client.online_snapshot(),
+        "online": presence_hub.snapshot(),
         "events": mq.recent_events(20),
     }
 

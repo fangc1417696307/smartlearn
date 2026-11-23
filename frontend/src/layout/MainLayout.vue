@@ -38,10 +38,14 @@ import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../store/user'
 import { canAccessRoute, resolveHome } from '../router/rules'
+import { usePresence } from '../composables/usePresence'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+
+// 实时在线状态：进入主界面即建立 presence 长连接，退出/关闭页面即下线
+usePresence()
 
 // 进入主界面时从后端拉取最新用户信息与权限：
 // 管理员改了某人的角色/额外权限后，对方刷新页面即可生效，无需重新登录
@@ -78,13 +82,14 @@ const menu = computed(() => {
   if (perms.includes('path.manage')) items.push({ path: '/path', label: '学习路径', icon: 'Guide' })
   if (perms.includes('resource.view')) items.push({ path: '/resources', label: '资源中心', icon: 'Collection' })
   if (perms.includes('qa.ask')) items.push({ path: '/qa', label: '答疑', icon: 'ChatDotRound' })
+  if (perms.includes('chat.use')) items.push({ path: '/chat', label: '消息', icon: 'ChatLineRound' })
   if (perms.includes('assessment.view')) items.push({ path: '/assessment', label: '学习评估', icon: 'DataLine' })
   if (perms.includes('profile.manage')) items.push({ path: '/profile', label: '我的画像', icon: 'User' })
   items.push({ path: '/account', label: '个人中心', icon: 'Setting' })
   return items
 })
 
-const titles = { dashboard: '首页', path: '学习路径', resources: '资源中心', 'resource-detail': '资源详情', qa: '答疑', assessment: '学习评估', profile: '我的画像', users: '用户管理', roles: '角色管理', students: '学生管理', account: '个人中心', stats: '数据大屏' }
+const titles = { dashboard: '首页', path: '学习路径', resources: '资源中心', 'resource-detail': '资源详情', qa: '答疑', chat: '消息', assessment: '学习评估', profile: '我的画像', users: '用户管理', roles: '角色管理', students: '学生管理', account: '个人中心', stats: '数据大屏' }
 const title = computed(() => titles[route.name] || '首页')
 const today = new Date().toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' })
 
@@ -110,7 +115,7 @@ function onLogout() {
 .user-name { font-size: 14px; font-weight: 700; }
 .user-major { font-size: 12px; color: #737373; }
 .logout-btn { border-radius: 999px; }
-.content { padding: 28px 34px; width: 100%; max-width: 1400px; margin: 0 auto; }
+.content { padding: 28px 34px; width: 100%; max-width: 1400px; margin: 0 auto; box-sizing: border-box; }
 .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .topbar-title { font-size: 26px; font-weight: 800; font-family: 'Bitter', serif; }
 .topbar-date { color: #737373; font-size: 13px; }

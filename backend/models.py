@@ -1,5 +1,7 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Table, ForeignKey
+from sqlalchemy import (
+    Column, Integer, String, Boolean, DateTime, Table, ForeignKey, UniqueConstraint,
+)
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -56,3 +58,53 @@ class Permission(Base):
     name = Column(String, nullable=False)
     description = Column(String, default="")
     roles = relationship("Role", secondary=role_permissions, back_populates="permissions")
+
+
+# ---------------------------------------------------------------------------
+# 即时聊天（对应 PPT：一条消息的一生 / 顺序性 / 离线同步 / 在线状态）
+# ---------------------------------------------------------------------------
+
+class Conversation(Base):
+    """会话：私聊（private）或群聊（group）。"""
+    __tablename__ = "conversations"
+    id = Column(Integer, primary_key=True, index=True)
+    type = Column(String, nullable=False, default="private")  # private | group
+    name = Column(String, default="")                          # 群聊名称，私聊为空
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    members = relationship(
+        "ConversationMember", back_populates="conversation", cascade="all, delete-orphan"
+    )
+
+
+class ConversationMember(Base):
+    """会话成员。last_read_seq 就是 PPT P12 的已读游标，未读数 = 最新 seq - 该值。"""
+    __tablename__ = "conversation_members"
+    conv_id = Column(
+        Integer, ForeignKey("conversations.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    joined_at = Column(DateTime, default=datetime.utcnow)
+    last_read_seq = Column(Integer, nullable=False, default=0)
+    conversation = relationship("Conversation", back_populates="members")
+    user = relationship("User")
+
+
+class Message(Base):
+    """消息表。
+
+    - (conv_id, seq) 唯一：保证会话内顺序，防并发发号重号（PPT P11）
+    - client_id 唯一：客户端幂等去重的锚点（PPT P10）
+    """
+    __tablename__ = "messages"
+    __table_args__ = (
+        UniqueConstraint("conv_id", "seq", name="uq_messages_conv_seq"),
+    )
+    id = Column(Integer, primary_key=True, index=True)
+    conv_id = Column(Integer, ForeignKey("conversations.id"), nullable=False, index=True)
+    seq = Column(Integer, nullable=False)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    client_id = Column(String, nullable=False, unique=True, index=True)
+    body = Column(String, nullable=False)
+    msg_type = Column(String, default="text")
+    created_at = Column(DateTime, default=datetime.utcnow)

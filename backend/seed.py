@@ -1,4 +1,8 @@
+from datetime import datetime, timedelta
+
+from sqlalchemy import func
 from sqlalchemy.orm import Session
+
 import models
 import config
 from security import hash_password
@@ -15,16 +19,18 @@ PERMISSIONS = [
     ("user.manage", "用户管理", "管理用户账号"),
     ("role.manage", "角色管理", "管理角色与权限"),
     ("stats.view", "数据看板", "查看系统数据看板与统计"),
+    ("chat.use", "即时聊天", "使用站内私聊与群聊"),
 ]
 
 ROLES = [
     ("student", "学生", "学习者，使用画像/路径/资源/答疑/评估", [
-        "profile.manage", "resource.view", "path.manage", "quiz.answer", "qa.ask", "assessment.view",
+        "profile.manage", "resource.view", "path.manage", "quiz.answer", "qa.ask",
+        "assessment.view", "chat.use",
     ]),
     # 老师是教学管理者，不参与学生学习流程，因此不配置学习类权限
     # （画像/路径/资源/答题/答疑/评估属于学生功能）
     ("teacher", "老师", "查看学生学习情况", [
-        "student.view",
+        "student.view", "chat.use",
     ]),
     ("admin", "管理员", "系统最高权限，管理用户与角色", None),  # None 表示全部权限
 ]
@@ -90,3 +96,88 @@ def seed(db: Session):
         student.roles.append(db.query(models.Role).filter(models.Role.code == "student").first())
         db.add(student)
         db.commit()
+
+    # 演示聊天数据：老师↔学生私聊 + 课程群，方便直接答辩演示
+    _seed_demo_chat(db, teacher, student)
+
+
+def _seed_demo_chat(db: Session, teacher: models.User, student: models.User):
+    """幂等创建两个演示会话。已有会话时只补齐缺失的部分。"""
+    private = _find_private_conv(db, teacher.id, student.id)
+    if private is None:
+        private = models.Conversation(type="private", owner_id=teacher.id)
+        db.add(private)
+        db.flush()
+        db.add_all([
+            models.ConversationMember(conv_id=private.id, user_id=teacher.id),
+            models.ConversationMember(conv_id=private.id, user_id=student.id),
+        ])
+        db.commit()
+        db.refresh(private)
+    _seed_messages(db, private, [
+        (teacher.id, "同学你好，这周的数据结构作业有哪里不清楚吗？"),
+        (student.id, "老师好，二叉树旋转那一节我有点没跟上。"),
+        (teacher.id, "别急，可以去资源中心先看《平衡二叉树》的讲解文档，看完还有问题随时问我。"),
+    ])
+
+    group = (
+        db.query(models.Conversation)
+        .filter(
+            models.Conversation.type == "group",
+            models.Conversation.name == "计算机导论 · 课程群",
+        )
+        .first()
+    )
+    if group is None:
+        group = models.Conversation(
+            type="group", name="计算机导论 · 课程群", owner_id=teacher.id
+        )
+        db.add(group)
+        db.flush()
+        db.add_all([
+            models.ConversationMember(conv_id=group.id, user_id=teacher.id),
+            models.ConversationMember(conv_id=group.id, user_id=student.id),
+        ])
+        db.commit()
+        db.refresh(group)
+    _seed_messages(db, group, [
+        (teacher.id, "欢迎加入课程群，作业和通知都会在这里发布。"),
+        (student.id, "收到，谢谢老师！"),
+    ])
+
+
+def _find_private_conv(db: Session, a: int, b: int):
+    rows = (
+        db.query(models.ConversationMember.conv_id)
+        .join(
+            models.Conversation,
+            models.Conversation.id == models.ConversationMember.conv_id,
+        )
+        .filter(
+            models.Conversation.type == "private",
+            models.ConversationMember.user_id.in_([a, b]),
+        )
+        .group_by(models.ConversationMember.conv_id)
+        .having(func.count(models.ConversationMember.user_id) == 2)
+        .all()
+    )
+    if not rows:
+        return None
+    return db.get(models.Conversation, rows[0][0])
+
+
+def _seed_messages(db: Session, conv: models.Conversation, entries):
+    """只在会话还没有任何消息时写入演示消息，避免每次启动重复插入。"""
+    if db.query(models.Message).filter(models.Message.conv_id == conv.id).first():
+        return
+    base = datetime.utcnow() - timedelta(hours=2)
+    for i, (sender_id, body) in enumerate(entries, start=1):
+        db.add(models.Message(
+            conv_id=conv.id,
+            seq=i,
+            sender_id=sender_id,
+            client_id=f"seed:{conv.id}:{i}",
+            body=body,
+            created_at=base + timedelta(minutes=i * 3),
+        ))
+    db.commit()

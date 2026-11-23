@@ -1,15 +1,32 @@
-from typing import Set
+from typing import Optional, Set
 import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
 import models
-import redis_client
 from database import get_db
 from security import decode_token
 
 bearer = HTTPBearer(auto_error=False)
+
+
+def token_user(db: Session, token: str) -> Optional[models.User]:
+    """按 token 解析有效用户；无效 / 过期 / 停用一律返回 None。
+
+    HTTP 与 WebSocket 共用：WS 握手时没有 Authorization 头，token 放在 query 里。
+    """
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+        user_id = int(payload["sub"])
+    except Exception:  # noqa: BLE001 - 过期或伪造 token
+        return None
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user or not user.is_active or user.status != "active":
+        return None
+    return user
 
 
 def get_current_user(
@@ -28,8 +45,6 @@ def get_current_user(
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=401, detail="用户不存在")
-    # 记录在线状态（Redis 不可用时内部自动降级，不影响请求）
-    redis_client.touch_online(user)
     return user
 
 

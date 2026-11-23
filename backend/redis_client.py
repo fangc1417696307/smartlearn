@@ -122,48 +122,6 @@ def cache_stats():
 
 
 # ---------------------------------------------------------------------------
-# 在线用户（Sorted Set，score 为最后活跃时间）
-# ---------------------------------------------------------------------------
-
-def touch_online(user):
-    """把用户标记为在线；5 分钟没有请求会自动过期。"""
-    now_ms = int(time.time() * 1000)
-    member = json.dumps(
-        {"id": user.id, "account": user.account, "nickname": user.nickname},
-        ensure_ascii=False,
-    )
-
-    def op(c):
-        pipe = c.pipeline()
-        pipe.zadd(config.ONLINE_KEY, {member: now_ms})
-        pipe.zremrangebyscore(config.ONLINE_KEY, 0, now_ms - config.ONLINE_WINDOW_MS)
-        pipe.execute()
-
-    return run(op)
-
-
-def online_snapshot():
-    now_ms = int(time.time() * 1000)
-    cutoff = now_ms - config.ONLINE_WINDOW_MS
-
-    def op(c):
-        c.zremrangebyscore(config.ONLINE_KEY, 0, cutoff)
-        count = c.zcount(config.ONLINE_KEY, cutoff, "+inf")
-        rows = c.zrevrange(config.ONLINE_KEY, 0, 9, withscores=True)
-        users = []
-        for member, score in rows:
-            try:
-                data = json.loads(member)
-            except (TypeError, ValueError):
-                continue
-            data["last_active"] = int(score)
-            users.append(data)
-        return {"count": int(count), "users": users}
-
-    return run(op, {"count": 0, "users": []})
-
-
-# ---------------------------------------------------------------------------
 # Redis 服务自身指标
 # ---------------------------------------------------------------------------
 
